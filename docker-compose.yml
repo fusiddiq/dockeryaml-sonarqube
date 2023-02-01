@@ -1,0 +1,54 @@
+#version: "3"
+services:
+  sonarqube:
+    image: sonarqube:latest
+    #image: sonarqube:lts-community
+    container_name: sonarqube-1
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - SONARQUBE_JDBC_USERNAME=sonar
+      - SONARQUBE_JDBC_PASSWORD=password123
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonarqube
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_conf:/opt/sonarqube/conf
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+    networks:
+      - networkName
+
+  db:
+    image: postgres:12
+    container_name: db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=password123
+      - POSTGRES_DB=sonarqube
+    volumes:
+      - sonarqube_db:/var/lib/postgresql10
+      - postgresql_data:/var/lib/postgresql10/data
+    networks:
+      - networkName
+
+networks:
+  networkName:
+    driver: bridge
+
+volumes:
+  postgresql_data:
+  sonarqube_bundled-plugins:
+  sonarqube_conf:
+  sonarqube_data:
+  sonarqube_db:
+  sonarqube_extensions:
+  nginx_conf:
+  certs_folder:
+  some_vol:
+#     #docker run -d --name wp-ecomm-site --network e-commerce-app -e WORDPRESS_DB_HOST=mysql-container -e WORDPRESS_DB_USER=root -e WORDPRESS_DB_PASSWORD=Password -e WORDPRESS_DB_NAME=e-comm-db -p 8082:80 wordpress
+#     #docker run -d --rm --name mysql-container -p 3306:3306 --network e-commerce-app --link mysql-container -e PMA_HOST=mysql-container -e PMA_USER=root -e MYSQL_PASSWORD=Password mysql
+#     #docker run -d --rm --name phpmyadmin-container --network e-commerce-app --link mysql-container:mysql-container -e PMA_HOST=mysql-container -e PMA_USER=root -e PMA_PASSWORD=Password -p 8083:80 phpmyadmin
